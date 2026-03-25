@@ -15,7 +15,7 @@ export default async function auth(req, res, next) {
     // Verify token
     try {
         const payload = jwt.verify(token, JWT_SECRET);
-        const user = await User.findById(payload.id).select('-password');
+        const user = await User.findById(payload.userId).select('-password');
         if (!user) {
             return res.status(401).json({ 
                 success: false, 
