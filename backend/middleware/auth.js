@@ -3,6 +3,7 @@ import jwt from "jsonwebtoken";
 
 const JWT_SECRET = 'your_jwt_secret_here';
 
+
 export default async function auth(req, res, next) {
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
