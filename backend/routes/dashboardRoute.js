@@ -4,5 +4,5 @@ import authMiddleware from '../middleware/auth.js';
 
 const dashboardRouter = express.Router();
 
-dashboardRouter.get('/overview', authMiddleware, getDashboardOverview);
+dashboardRouter.get("/", authMiddleware, getDashboardOverview);
 export default dashboardRouter;

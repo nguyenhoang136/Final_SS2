@@ -1,20 +1,45 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { dashboardStyles, trendStyles, chartStyles } from '../assets/dummyStyles'
-import { GAUGE_COLORS, COLORS, INCOME_CATEGORY_ICONS, EXPENSE_CATEGORY_ICONS } from '../assets/color'
+import {
+  GAUGE_COLORS,
+  COLORS,
+  INCOME_CATEGORY_ICONS,
+  EXPENSE_CATEGORY_ICONS
+} from '../assets/color'
 import { useOutletContext } from 'react-router-dom'
 import axios from 'axios'
-import { ArrowDown, BarChart2, PiggyBank, Plus, TrendingDown, TrendingUp, Wallet } from 'lucide-react'
-import { getTimeFrameRange, getPreviousTimeFrameRange, calculateData } from '../components/Helpers';
+import {
+  ArrowDown,
+  BarChart2,
+  ChevronDown,
+  ChevronUp,
+  DollarSign,
+  PiggyBank,
+  Plus,
+  ShoppingCart,
+  TrendingDown,
+  TrendingUp as ProfitIcon,
+  PieChart as PieChartIcon,
+  Wallet,
+  TrendingUp,
+} from 'lucide-react'
+import AddTransactionModal from '../components/Add'
+import {
+  getTimeFrameRange,
+  getPreviousTimeFrameRange,
+  calculateData
+} from '../components/Helpers';
 import FinancialCard from '../components/FinancialCard'
 import GaugeCard from '../components/GaugeCard'
+import { Cell, PieChart, Legend, Pie, ResponsiveContainer, Tooltip } from 'recharts'
 
 
-const API_BASE = "http://localhost:4000/api"
+const API_BASE = "http://localhost:4000/api";
 
 const getAuthHeader = () => {
   const token = localStorage.getItem("token") || localStorage.getItem("authToken");
-  return token ? { Authorization: `Bearer ${token} ` } : {};
-}
+  return token ? { Authorization: `Bearer ${token}` } : {};
+};
 
 // to convert date to ISO timeline
 function toIsoWithClientTime(dateValue) {
@@ -294,11 +319,13 @@ const Dashboard = () => {
         console.warn("Dashboard endpoint returned success:false", res?.data);
       }
     } catch (err) {
-      console.error("Failed to fetch dashboard overview:", err?.response || err.message || err);
+      console.error(
+        "Failed to fetch dashboard overview:",
+        err?.response || err.message || err,
+      );
     } finally {
       setLoading(false);
     }
-
   };
 
   useEffect(() => {
@@ -310,11 +337,12 @@ const Dashboard = () => {
     if (!newTransaction.description || !newTransaction.amount) return;
 
     const payload = {
-      date: toIsoWithClientTime(newTransaction, date),
+      date: toIsoWithClientTime(newTransaction.date),
       description: newTransaction.description,
       amount: parseFloat(newTransaction.amount),
       category: newTransaction.category,
     };
+
     try {
       setLoading(true);
       if (newTransaction.type === "income") {
@@ -344,6 +372,7 @@ const Dashboard = () => {
   }
   return (
     <div className={dashboardStyles.container}>
+      {/* header */}
       <div className={dashboardStyles.headerContainer}>
         <div className={dashboardStyles.headerContent}>
           <div>
@@ -351,106 +380,109 @@ const Dashboard = () => {
             <p className={dashboardStyles.headerSubtitle}>
               Track your income and expense
             </p>
-            <div>
-              <button onClick={() => setShowModal(true)} className={dashboardStyles.addButton}>
-                <Plus size={20} />
-                Add Transaction
-              </button>
-            </div>
-            <div className={dashboardStyles.timeFrameContainer}>
-              <div className={dashboardStyles.timeFrameWrapper}>
-                {["daily", "weekly", "monthly"].map((frame) => (
-                  <button
-                    key={frame}
-                    onClick={() => setTimeFrame(frame)}
-                    className={dashboardStyles.timeFrameButton(timeFrame === frame)}
-                  >
-                    {frame.charAt(0).toUpperCase() + frame.slice(1)}
-                  </button>
-                ))}
-              </div>
-            </div>
           </div>
-          
-          <div className={dashboardStyles.summaryGrid}>
-            {/* <FinancialCard icon={
-              <div className={dashboardStyles.walletIconContainer}>
-                <Wallet className=" w-5 h-5 text-teal-600" />
-              </div>
-            } label="Total Balance" value={`$${Math.round(displayIncome - displayExpenses).toLocaleString()}`}
-              additionalContent={
-                <div className=" flex items-center gap-2 mt-2 text-sm">
-                  <span className={dashboardStyles.balanceBadge}>
-                    +${Math.round(displayIncome).toLocaleString()}
-                  </span>
-                  <span className={dashboardStyles.expenseBadge}>
-                    -${Math.round(displayExpenses).toLocaleString()}
-                  </span>
-                </div>
-              }
-            /> */}
+          <button
+            onClick={() => setShowModal(true)}
+            className={dashboardStyles.addButton}
+          >
+            <Plus size={20} />
+            Add Transaction
+          </button>
+        </div>
 
-            {/* <FinancialCard icon={
-              <div className={dashboardStyles.arrowDownIconContainer}>
-                <ArrowDown className=" w-5 h-5 text-orange-600" />
-              </div>
-            }
-              label={`${timeFrameRange.label} Expenses`}
-              value={`$${Math.round(displayExpenses).toLocaleString()}`}
-              additionalContent={
-                <div className={`mt-2 text-xs flex items-center gap-1 ${expenseChange >= 0 ? trendStyles.positive : trendStyles.negative
-                  }`}
-                >
-                  {expenseChange >= 0 ? (
-                    <TrendingUp className=" w-4 h-4" />
-                  ) : (
-                    <TrendingDown className=" w-4 h-4" />
-                  )}
-                  <span>
-                    {Math.abs(expenseChange)}%{" "}
-                    {expenseChange >= 0 ? "increase" : "decrease"} from{" "}
-                    {prevTimeFrameRange.label}
-                  </span>
-                </div>
-              }
-            /> */}
-            {/* <FinancialCard icon={
-              <div className={dashboardStyles.piggyBankIconContainer}>
-                <PiggyBank className=" w-5 h-5 text-cyan-600" />
-              </div>
-            }
-              label={`${timeFrameRange.label} Saving`}
-              value={`$${Math.round(displaySavings).toLocaleString()}`}
-              additionalContent={
-                <div className=" mt-2 text-xs text-cyan-600 flex items-center gap-2">
-                  <div className=" flex items-center gap-1">
-                    <BarChart2 className=" w-4 h-4" />
-                    <span >
-                      {displayIncome > 0
-                        ? Math.round((displaySavings / displayIncome) * 100)
-                        : 0}
-                      % of income
-                    </span>
-                  </div>
-
-                  {typeof overviewMeta.savingsRate === "number" && (
-                    <span
-                      className={`px-2 py-1 rounded-full text-xs font-medium ${overviewMeta.savingsRate < 0
-                          ? trendStyles.negativeRate
-                          : trendStyles.positiveRate
-                        }`}
-                    >
-                      {overviewMeta.savingsRate}%
-                    </span>
-                  )}
-                </div>
-              }
-            /> */}
+        <div className={dashboardStyles.timeFrameContainer}>
+          <div className={dashboardStyles.timeFrameWrapper}>
+            {["daily", "weekly", "monthly"].map((frame) => (
+              <button
+                key={frame}
+                onClick={() => setTimeFrame(frame)}
+                className={dashboardStyles.timeFrameButton(timeFrame === frame)}
+              >
+                {frame.charAt(0).toUpperCase() + frame.slice(1)}
+              </button>
+            ))}
           </div>
         </div>
       </div>
 
-      {/* Gauges */}
+      <div className={dashboardStyles.summaryGrid}>
+        <FinancialCard icon={
+          <div className={dashboardStyles.walletIconContainer}>
+            <Wallet className=" w-5 h-5 text-teal-600" />
+          </div>
+        } label="Total Balance" value={`$${Math.round(displayIncome - displayExpenses).toLocaleString()}`}
+          additionalContent={
+            <div className=" flex items-center gap-2 mt-2 text-sm">
+              <span className={dashboardStyles.balanceBadge}>
+                +${Math.round(displayIncome).toLocaleString()}
+              </span>
+              <span className={dashboardStyles.expenseBadge}>
+                -${Math.round(displayExpenses).toLocaleString()}
+              </span>
+            </div>
+          }
+        />
+
+        <FinancialCard icon={
+          <div className={dashboardStyles.arrowDownIconContainer}>
+            <ArrowDown className=" w-5 h-5 text-orange-600" />
+          </div>
+        }
+          label={`${timeFrameRange.label} Expense`}
+          value={`$${Math.round(displayExpenses).toLocaleString()}`}
+          additionalContent={
+            <div className={`mt-2 text-xs flex items-center gap-1 ${expenseChange >= 0 ? trendStyles.positive : trendStyles.negative
+              }`}
+            >
+              {expenseChange >= 0 ? (
+                <TrendingUp className=' w-4 h-4' />
+              ) : (
+                <TrendingDown className=' w-4 h-4' />
+              )}
+              <span>
+                {Math.abs(expenseChange)}%{" "}
+                {expenseChange >= 0 ? "increase" : "decrease"} from{" "}
+                {prevTimeFrameRange.label}
+              </span>
+            </div>
+          }
+        />
+
+        <FinancialCard icon={
+          <div className={dashboardStyles.piggyBankIconContainer}>
+            <PiggyBank className=" w-5 h-5 text-cyan-600" />
+          </div>
+        }
+          label={`${timeFrameRange.label} Savings`}
+          value={`$${Math.round(displaySavings).toLocaleString()}`}
+          additionalContent={
+            <div className=' mt-2 text-xs text-cyan-600 flex items-center gap-2'>
+              <div className=' flex items-center gap-1'>
+                <BarChart2 className=' w-4 h-4' />
+                <span>
+                  {displayIncome > 0
+                    ? Math.round((displaySavings / displayIncome) * 100)
+                    : 0}
+                  % of income
+                </span>
+              </div>
+
+              {typeof overviewMeta.savingsRate === "number" && (
+                <span
+                  className={`px-2 py-1 rounded-full text-xs font-medium ${overviewMeta.savingsRate < 0
+                    ? trendStyles.negativeRate
+                    : trendStyles.positiveRate
+                    }`}
+                >
+                  {overviewMeta.savingsRate}%
+                </span>
+              )}
+            </div>
+          }
+        />
+      </div>
+
+      {/* Gauges  */}
       <div className={dashboardStyles.gaugeGrid}>
         {gaugeData.map((gauge) => (
           <GaugeCard
@@ -461,9 +493,211 @@ const Dashboard = () => {
           />
         ))}
       </div>
+
+      {/* Expense distribution pie - Hidden on mobile */}
+      <div className={dashboardStyles.pieChartContainer}>
+        <div className={dashboardStyles.pieChartHeader}>
+          <h3 className={dashboardStyles.pieChartTitle}>
+            <PieChartIcon className="w-6 h-6 text-teal-500" />
+            Expense Distribution
+            <span className={dashboardStyles.listSubtitle}>
+              {" "}
+              ({timeFrameRange.label})
+            </span>
+          </h3>
+        </div>
+
+        <div className={dashboardStyles.pieChartHeight}>
+          <ResponsiveContainer width="100%" height="100%">
+            <PieChart className={chartStyles.pieChart}>
+              <Pie
+                data={financialOverviewData}
+                cx="50%"
+                cy="50%"
+                innerRadius={70}
+                outerRadius={110}
+                paddingAngle={2}
+                dataKey="value"
+                label={({ name, percent }) =>
+                  `${name}: ${Math.round(percent * 100)}%`
+                }
+                labelLine={false}
+              >
+                {financialOverviewData.map((entry, index) => (
+                  <Cell
+                    key={`cell-${index}`}
+                    fill={COLORS[index % COLORS.length]}
+                    stroke="#fff"
+                    strokeWidth={2}
+                  />
+                ))}
+              </Pie>
+              <Tooltip
+                formatter={(value) => [`$${Math.round(value).toLocaleString()}`, "Amount"]}
+                contentStyle={dashboardStyles.tooltipContent}
+                itemStyle={dashboardStyles.tooltipItem}
+              />
+              <Legend
+                layout="horizontal"
+                verticalAlign="bottom"
+                align="center"
+                formatter={(v) => (
+                  <span className={dashboardStyles.legendText}>{v}</span>
+                )}
+                iconSize={10}
+                iconType="circle"
+                wrapperStyle={dashboardStyles.legendWrapper}
+              />
+            </PieChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+
+      <div className={dashboardStyles.listsGrid}>
+        {/* Income Column */}
+        <div className={dashboardStyles.listContainer}>
+          <div className={dashboardStyles.listHeader}>
+            <h3 className={dashboardStyles.listTitle}>
+              <ProfitIcon className="w-6 h-6 text-green-500" /> Recent Income{" "}
+              <span className={dashboardStyles.listSubtitle}> ({timeFrameRange.label})</span>
+            </h3>
+            <span className={dashboardStyles.incomeCountBadge}>
+              {incomeListForDisplay.length} records
+            </span>
+          </div>
+
+          <div className={dashboardStyles.transactionList}>
+            {displayedIncome.map((transaction) => {
+              const IconComponent = INCOME_CATEGORY_ICONS[transaction.category] || INCOME_CATEGORY_ICONS.Other;
+              return (
+                <div key={transaction.id} className={dashboardStyles.incomeTransactionItem}>
+                  <div className={dashboardStyles.transactionContent}>
+                    <div className={dashboardStyles.incomeIconContainer}>
+                      {IconComponent}
+                    </div>
+                    <div>
+                      <p className={dashboardStyles.transactionDescription}>{transaction.description}</p>
+                      <p className={dashboardStyles.transactionCategory}>{transaction.category}</p>
+                    </div>
+                  </div>
+                  <div className={dashboardStyles.transactionAmount}>
+                    <p className={dashboardStyles.incomeAmount}>+${Math.abs(transaction.amount).toLocaleString()}</p>
+                    <p className={dashboardStyles.transactionDate}>{new Date(transaction.date).toLocaleDateString()}</p>
+                  </div>
+                </div>
+              );
+            })}
+
+            {incomeListForDisplay.length === 0 && (
+              <div className={dashboardStyles.emptyState}>
+                <div className={dashboardStyles.emptyIconContainer("bg-green-50")}>
+                  <DollarSign className="w-8 h-8 text-green-400" />
+                </div>
+                <p className={dashboardStyles.emptyText}>No income transactions</p>
+              </div>
+            )}
+
+            {incomeListForDisplay.length > 3 && (
+              <div className={dashboardStyles.viewAllContainer}>
+                <button
+                  onClick={() => setShowAllIncome(!showAllIncome)}
+                  className={dashboardStyles.viewAllButton}
+                >
+                  {showAllIncome ? (
+                    <>
+                      <ChevronUp className="w-5 h-5" />
+                      Show Less
+                    </>
+                  ) : (
+                    <>
+                      <ChevronDown className="w-5 h-5" />
+                      View All Income ({incomeListForDisplay.length})
+                    </>
+                  )}
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Expense Column */}
+        <div className={dashboardStyles.listContainer}>
+          <div className={dashboardStyles.listHeader}>
+            <h3 className="text-lg md:text-xl lg:text-xl xl:text-xl font-bold text-gray-800 md:mt-3 mt-3 flex items-center gap-3">
+              <ArrowDown className="w-6 h-6 text-orange-500" /> Recent Expenses{" "}
+              <span className={dashboardStyles.listSubtitle}> ({timeFrameRange.label})</span>
+            </h3>
+            <span className={dashboardStyles.expenseCountBadge}>
+              {expenseListForDisplay.length} records
+            </span>
+          </div>
+
+          <div className={dashboardStyles.transactionList}>
+            {displayedExpense.map((transaction) => {
+              const IconComponent = EXPENSE_CATEGORY_ICONS[transaction.category] || EXPENSE_CATEGORY_ICONS.Other;
+              return (
+                <div key={transaction.id} className={dashboardStyles.expenseTransactionItem}>
+                  <div className={dashboardStyles.transactionContent}>
+                    <div className={dashboardStyles.expenseIconContainer}>
+                      {IconComponent}
+                    </div>
+                    <div>
+                      <p className={dashboardStyles.transactionDescription}>{transaction.description}</p>
+                      <p className={dashboardStyles.transactionCategory}>{transaction.category}</p>
+                    </div>
+                  </div>
+                  <div className={dashboardStyles.transactionAmount}>
+                    <p className={dashboardStyles.expenseAmount}>-${Math.abs(transaction.amount).toLocaleString()}</p>
+                    <p className={dashboardStyles.transactionDate}>{new Date(transaction.date).toLocaleDateString()}</p>
+                  </div>
+                </div>
+              );
+            })}
+
+            {expenseListForDisplay.length === 0 && (
+              <div className={dashboardStyles.emptyState}>
+                <div className={dashboardStyles.emptyIconContainer("bg-orange-50")}>
+                  <ShoppingCart className="w-8 h-8 text-orange-400" />
+                </div>
+                <p className={dashboardStyles.emptyText}>No expense transactions</p>
+              </div>
+            )}
+
+            {expenseListForDisplay.length > 3 && (
+              <div className={dashboardStyles.viewAllContainer}>
+                <button
+                  onClick={() => setShowAllExpense(!showAllExpense)}
+                  className={dashboardStyles.viewAllButton}
+                >
+                  {showAllExpense ? (
+                    <>
+                      <ChevronUp className="w-5 h-5" />
+                      Show Less
+                    </>
+                  ) : (
+                    <>
+                      <ChevronDown className="w-5 h-5" />
+                      View All Expenses ({expenseListForDisplay.length})
+                    </>
+                  )}
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      <AddTransactionModal
+      showModal={showModal} 
+      setShowModal={setShowModal}
+      newTransaction={newTransaction}
+      setNewTransaction={setNewTransaction}
+      handleAddTransaction={handleAddTransaction}
+      loading={loading}
+      />
     </div>
   );
 };
 
 
-export default Dashboard
+export default Dashboard;

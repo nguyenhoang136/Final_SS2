@@ -5,6 +5,9 @@ import Dashboard from "./pages/Dashboard";
 import Login from "./components/Login";
 import Signup from "./components/Signup";
 import axios from "axios";
+import Income from "./pages/income";
+import Expense from "./pages/Expense";
+import Profile from "./pages/Profile";
 
 
 const API_URL = "http://localhost:4000"
@@ -199,8 +202,8 @@ const App = () => {
                 addTransaction={addTransaction}
                 editTransaction={editTransaction}
                 deleteTransaction={deleteTransaction}
-                refreshTransactions={refreshTransactions} 
-                />
+                refreshTransactions={refreshTransactions}
+              />
             </ProtectedRoute>
           }
         >
@@ -213,8 +216,50 @@ const App = () => {
             deleteTransaction={deleteTransaction}
             refreshTransactions={refreshTransactions}
           />
+
+          <Route
+            path="/income"
+            element={
+              <Income
+                transactions={transactions}
+                addTransaction={addTransaction}
+                editTransaction={editTransaction}
+                deleteTransaction={deleteTransaction}
+                refreshTransactions={refreshTransactions}
+              />
+            }
+          />
+
+          <Route
+            path="/expense"
+            element={
+              <Expense
+                transactions={transactions}
+                addTransaction={addTransaction}
+                editTransaction={editTransaction}
+                deleteTransaction={deleteTransaction}
+                refreshTransactions={refreshTransactions}
+              />
+            }
+          />
+
+          <Route
+            path="/profile"
+            element={
+              <Profile
+                user={user}
+                onUpdateProfile={updateUserData}
+                onLogout={handleLogout}
+              />
+            }
+          />
         </Route>
 
+
+        <Route
+          path="*"
+          element={<Navigate to={user ? "/" : "/login"} replace />}
+        />
       </Routes>
     </>
   );

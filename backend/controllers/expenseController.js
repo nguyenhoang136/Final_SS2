@@ -38,15 +38,15 @@ export async function addExpense(req, res) {
             success: false,
             message: "Server error"
         });
-    }
+    } 
 }
 
 // to all expense
 export async function getAllExpense(req, res) {
     const userId = req.user._id;
     try {
-        const expens = await expenseModel.find({ userId }).sort({ date: -1 });
-        res.json(expen);
+        const expense = await expenseModel.find({ userId }).sort({ date: -1 });
+        res.json(expense);
     }
 
     catch (error) {
