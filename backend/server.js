@@ -6,7 +6,7 @@ import userRouter from './routes/userRoute.js';
 import incomeRouter from './routes/incomeRoute.js';
 import expenseRouter from './routes/expenseRoute.js';
 import dashboardRouter from './routes/dashboardRoute.js';
-
+import chatRouter from './routes/chatRoute.js';
 
 
 const app = express();
@@ -26,6 +26,7 @@ app.use('/api/user', userRouter);
 app.use('/api/income', incomeRouter);
 app.use('/api/expense', expenseRouter);
 app.use('/api/dashboard', dashboardRouter);
+app.use('/api/chat', chatRouter);
 
 
 app.get('/', (req, res) => {

@@ -8,6 +8,7 @@ import axios from "axios";
 import Income from "./pages/income";
 import Expense from "./pages/Expense";
 import Profile from "./pages/Profile";
+import ChatBot from "./components/ChatBot";
 
 
 const API_URL = "http://localhost:4000"
@@ -188,6 +189,7 @@ const App = () => {
   return (
     <>
       <ScrollToTop />
+      {user && <ChatBot token={token} />}
       <Routes>
         <Route path="/login" element={<Login onLogin={handleLogin} />} />
         <Route path="/signup" element={<Signup onSignup={handleSignup} />} />
