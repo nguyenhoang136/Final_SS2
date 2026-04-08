@@ -6,7 +6,16 @@ export const getAIResponse = async (req, res) => {
 
         const response = await axios.post('https://api.voidai.app/v1/chat/completions', {
             model: "gpt-4o",
-            messages: [{ role: "user", content: message }]
+            messages: [{ 
+                    role: "system", 
+                    content: `Bạn là trợ lý ảo của trang web "Budget Tracker". 
+                    Nhiệm vụ của bạn là hướng dẫn người dùng:
+                    1. Trang Dashboard: Xem tổng quan thu chi bằng biểu đồ.
+                    2. Trang Income: Nơi thêm các khoản thu nhập như lương, thưởng.
+                    3. Trang Expense: Nơi ghi chép các khoản chi tiêu hàng ngày.
+                    4. Trang Profile: Quản lý thông tin cá nhân.
+                    Hãy trả lời ngắn gọn, lịch sự bằng tiếng Việt.` 
+                },{ role: "user", content: message }]
         }, {
             headers: {
                 'Authorization': `Bearer ${process.env.AI_API_KEY}`,
