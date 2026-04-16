@@ -73,7 +73,7 @@ const Navbar = ({ user: propUser, onLogout }) => {
                     <div className={navbarStyles.logoImage}>
                         <img src={img1} alt="logo" />
                     </div>
-                    <span className={navbarStyles.logoText}>Bubget Tracker</span>
+                    <span className={navbarStyles.logoText}>Budget Tracker</span>
                 </div>
 
                 {/*if the user is present */}
