@@ -3,7 +3,7 @@ import validator from "validator";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 
-const JWT_SECRET = 'your_jwt_secret_here';
+const JWT_SECRET = process.env.ACCESS_TOKEN_SECRET;
 const TOKEN_EXPIRE = '24h';
 
 

@@ -1,7 +1,7 @@
 import User from "../models/userModel.js";
 import jwt from "jsonwebtoken";
 
-const JWT_SECRET = 'your_jwt_secret_here';
+const JWT_SECRET = process.env.ACCESS_TOKEN_SECRET;
 
 
 export default async function auth(req, res, next) {
