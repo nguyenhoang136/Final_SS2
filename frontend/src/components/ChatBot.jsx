@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
+import ReactMarkdown from 'react-markdown'; // 1. IMPORT THƯ VIỆN Ở ĐÂY
 
-// Sửa từ () thành ({ token }) để lấy trực tiếp token từ App.js
 const ChatBot = ({ token }) => { 
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState([
@@ -30,7 +30,6 @@ const ChatBot = ({ token }) => {
             method: 'POST',
             headers: { 
                 'Content-Type': 'application/json',
-                // SỬA TẠI ĐÂY: Dùng trực tiếp 'token', không phải 'props.token'
                 'Authorization': `Bearer ${token}` 
             },
             body: JSON.stringify({ message: currentInput }),
@@ -40,7 +39,6 @@ const ChatBot = ({ token }) => {
 
         setMessages((prev) => {
             const newMsgs = [...prev];
-            // Nếu data.success là true thì lấy data.reply, ngược lại báo lỗi
             newMsgs[newMsgs.length - 1] = { 
                 text: data.success ? data.reply : (data.error || "Có lỗi xảy ra!"), 
                 isBot: true 
@@ -77,17 +75,26 @@ const ChatBot = ({ token }) => {
                   color: msg.isBot ? 'black' : 'white',
                 }}
               >
-                {msg.text}
+                {/* 2. SỬA TẠI ĐÂY: Dùng ReactMarkdown để render nội dung text */}
+                <ReactMarkdown style={styles.markdownOverride}>
+                  {msg.text}
+                </ReactMarkdown>
               </div>
             ))}
           </div>
           <div style={styles.footer}>
-            <input
+            <textarea
               style={styles.input}
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  e.preventDefault();
+                  handleSendMessage();
+                }
+              }}
               placeholder="Nhập tin nhắn..."
+              rows={1}
             />
             <button style={styles.sendBtn} onClick={handleSendMessage}>Gửi</button>
           </div>
@@ -112,7 +119,16 @@ const styles = {
   },
   header: { padding: '15px', backgroundColor: '#007bff', color: 'white', fontWeight: 'bold' },
   body: { flex: 1, padding: '15px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '10px' },
-  message: { padding: '8px 12px', borderRadius: '15px', maxWidth: '80%', fontSize: '14px', wordBreak: 'break-word' },
+  
+  // 3. CẬP NHẬT STYLE: Thêm whiteSpace để xử lý xuống dòng mượt mà hơn, xóa bớt padding thừa
+  message: { 
+    padding: '2px 12px', 
+    borderRadius: '15px', 
+    maxWidth: '80%', 
+    fontSize: '14px', 
+    wordBreak: 'break-word',
+    whiteSpace: 'pre-line' 
+  },
   footer: { padding: '10px', borderTop: '1px solid #eee', display: 'flex' },
   input: { flex: 1, border: '1px solid #ddd', borderRadius: '20px', padding: '8px 15px', outline: 'none' },
   sendBtn: { marginLeft: '8px', border: 'none', backgroundColor: 'transparent', color: '#007bff', fontWeight: 'bold', cursor: 'pointer' }
